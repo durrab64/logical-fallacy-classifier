@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logical Fallacy Classifier</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #0F1B2D;
+    color: #E2E8F0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    background: #0F1B2D;
+    border-bottom: 1px solid #1E3A5F;
+    padding: 1.2rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .logo {
+    width: 38px; height: 38px;
+    background: #2E86C1;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; color: white;
+  }
+
+  header h1 { font-size: 1.1rem; font-weight: 600; color: #E2E8F0; }
+  header p  { font-size: 0.75rem; color: #64748B; margin-top: 2px; }
+
+  .tag {
+    margin-left: auto;
+    background: #1E3A5F;
+    color: #2E86C1;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+
+  main {
+    flex: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+    width: 100%;
+  }
+
+  .hero {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .hero h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #F1F5F9;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero h2 span { color: #2E86C1; }
+
+  .hero p {
+    color: #64748B;
+    font-size: 0.95rem;
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .input-card {
+    background: #1A2E47;
+    border: 1px solid #1E3A5F;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .input-card label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 0.75rem;
+  }
+
+  textarea {
+    width: 100%;
+    background: #0F1B2D;
+    border: 1px solid #1E3A5F;
+    border-radius: 10px;
+    color: #E2E8F0;
+    font-size: 0.95rem;
+    font-family: inherit;
+    padding: 1rem;
+    resize: vertical;
+    min-height: 110px;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+  }
+
+  textarea:focus { border-color: #2E86C1; }
+  textarea::placeholder { color: #374151; }
+
+  .examples-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+  }
+
+  .example-btn {
+    background: #0F1B2D;
+    border: 1px solid #1E3A5F;
+    border-radius: 20px;
+    color: #64748B;
+    font-size: 11px;
+    padding: 4px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+
+  .example-btn:hover { border-color: #2E86C1; color: #2E86C1; }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 1rem;
+  }
+
+  button.analyze {
+    flex: 1;
+    background: #2E86C1;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 0.85rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  button.analyze:hover { background: #1A6FA8; }
+  button.analyze:disabled { background: #1E3A5F; color: #374151; cursor: not-allowed; }
+
+  button.clear {
+    background: transparent;
+    border: 1px solid #1E3A5F;
+    color: #64748B;
+    border-radius: 10px;
+    padding: 0.85rem 1.2rem;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+
+  button.clear:hover { border-color: #64748B; color: #94A3B8; }
+
+  /* Result */
+  .result-card {
+    background: #1A2E47;
+    border: 1px solid #1E3A5F;
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .result-card.visible { display: block; }
+
+  .result-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .fallacy-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .fallacy-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #F1F5F9;
+    margin-bottom: 4px;
+  }
+
+  .taxonomy-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+
+  .confidence-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+  }
+
+  .confidence-label { font-size: 12px; color: #64748B; min-width: 80px; }
+
+  .confidence-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: #0F1B2D;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .confidence-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+
+  .confidence-pct { font-size: 13px; font-weight: 600; color: #F1F5F9; min-width: 42px; text-align: right; }
+
+  .description-box {
+    background: #0F1B2D;
+    border-radius: 10px;
+    padding: 1rem;
+    font-size: 0.9rem;
+    color: #94A3B8;
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+    border-left: 3px solid #2E86C1;
+  }
+
+  .top3-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 0.6rem;
+  }
+
+  .top3-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .top3-name { font-size: 12px; color: #94A3B8; min-width: 180px; }
+  .top3-bar-wrap { flex: 1; height: 5px; background: #0F1B2D; border-radius: 3px; overflow: hidden; }
+  .top3-bar { height: 100%; border-radius: 3px; background: #2E86C1; }
+  .top3-pct { font-size: 11px; color: #64748B; min-width: 38px; text-align: right; }
+
+  /* Spinner */
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Taxonomy cards */
+  .taxonomy-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 2.5rem;
+  }
+
+  .tax-card {
+    background: #1A2E47;
+    border: 1px solid #1E3A5F;
+    border-radius: 12px;
+    padding: 1rem;
+  }
+
+  .tax-card-title {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .tax-card-items {
+    font-size: 11px;
+    color: #64748B;
+    line-height: 1.8;
+  }
+
+  footer {
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 11px;
+    color: #374151;
+    border-top: 1px solid #1E3A5F;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">LF</div>
+  <div>
+    <h1>Logical Fallacy Classifier</h1>
+    <p>Fine-tuned BERT · Custom Taxonomy · NUML Lahore</p>
+  </div>
+  <span class="tag">AI PROJECT</span>
+</header>
+
+<main>
+  <div class="hero">
+    <h2>Detect <span>Logical Fallacies</span> with AI</h2>
+    <p>Enter any argument or statement. Our fine-tuned BERT model will classify the fallacy type and map it to our custom taxonomy.</p>
+  </div>
+
+  <div class="input-card">
+    <label>Enter Argument</label>
+    <textarea id="inputText" placeholder="Type or paste any argument here..."></textarea>
+
+    <div class="examples-row">
+      <span style="font-size:11px;color:#374151;align-self:center">Try:</span>
+      <button class="example-btn" onclick="setExample(0)">Everyone believes it</button>
+      <button class="example-btn" onclick="setExample(1)">Attack the person</button>
+      <button class="example-btn" onclick="setExample(2)">Slippery slope</button>
+      <button class="example-btn" onclick="setExample(3)">False cause</button>
+    </div>
+
+    <div class="btn-row">
+      <button class="analyze" id="analyzeBtn" onclick="analyze()">
+        <span id="btnText">Analyze Argument</span>
+        <div class="spinner" id="spinner"></div>
+      </button>
+      <button class="clear" onclick="clearAll()">Clear</button>
+    </div>
+  </div>
+
+  <div class="result-card" id="resultCard">
+    <div class="result-header">
+      <div class="fallacy-icon" id="fallacyIcon"></div>
+      <div>
+        <div class="fallacy-name" id="fallacyName"></div>
+        <span class="taxonomy-badge" id="taxonomyBadge"></span>
+      </div>
+    </div>
+
+    <div class="confidence-row">
+      <span class="confidence-label">Confidence</span>
+      <div class="confidence-bar-wrap">
+        <div class="confidence-bar" id="confBar"></div>
+      </div>
+      <span class="confidence-pct" id="confPct"></span>
+    </div>
+
+    <div class="description-box" id="descBox"></div>
+
+    <div class="top3-title">Top Predictions</div>
+    <div id="top3Container"></div>
+  </div>
+
+  <div class="taxonomy-grid">
+    <div class="tax-card">
+      <div class="tax-card-title" style="color:#2E86C1">Relevance Fallacy</div>
+      <div class="tax-card-items">Ad Hominem<br>Appeal to Emotion<br>Ad Populum<br>Fallacy of Relevance<br>Fallacy of Credibility</div>
+    </div>
+    <div class="tax-card">
+      <div class="tax-card-title" style="color:#1E8449">Presumption Fallacy</div>
+      <div class="tax-card-items">Faulty Generalization<br>False Causality<br>False Dilemma<br>Circular Reasoning</div>
+    </div>
+    <div class="tax-card">
+      <div class="tax-card-title" style="color:#7D3C98">Clarity Fallacy</div>
+      <div class="tax-card-items">Fallacy of Extension<br>Fallacy of Logic<br>Equivocation<br>Intentional</div>
+    </div>
+  </div>
+</main>
+
+<footer>NUML Lahore · 4th Semester · Artificial Intelligence · Logical Fallacy Classification with Custom Taxonomy</footer>
+
+<script>
+const examples = [
+  "Everyone is buying this product so it must be great.",
+  "You cannot trust his opinion on climate change, he failed his exams.",
+  "If we allow same sex marriage, next people will want to marry animals.",
+  "I took vitamin C and my cold went away, so vitamin C cured my cold."
+];
+
+const icons = {
+  'Relevance Fallacy':   { emoji: '🎯', bg: '#1A3A5C' },
+  'Presumption Fallacy': { emoji: '🧩', bg: '#1A3A2A' },
+  'Clarity Fallacy':     { emoji: '🌫️', bg: '#2E1A40' },
+};
+
+function setExample(i) {
+  document.getElementById('inputText').value = examples[i];
+}
+
+function clearAll() {
+  document.getElementById('inputText').value = '';
+  document.getElementById('resultCard').classList.remove('visible');
+}
+
+async function analyze() {
+  const text = document.getElementById('inputText').value.trim();
+  if (!text) return;
+
+  const btn     = document.getElementById('analyzeBtn');
+  const btnText = document.getElementById('btnText');
+  const spinner = document.getElementById('spinner');
+
+  btn.disabled    = true;
+  btnText.textContent = 'Analyzing...';
+  spinner.style.display = 'block';
+
+  try {
+    const res  = await fetch('/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    const data = await res.json();
+
+    // Populate result
+    const icon = icons[data.taxonomy] || { emoji: '⚠️', bg: '#1A2E47' };
+    document.getElementById('fallacyIcon').textContent    = icon.emoji;
+    document.getElementById('fallacyIcon').style.background = icon.bg;
+    document.getElementById('fallacyName').textContent    = data.fallacy;
+    document.getElementById('taxonomyBadge').textContent  = data.taxonomy;
+    document.getElementById('taxonomyBadge').style.background = data.color + '22';
+    document.getElementById('taxonomyBadge').style.color      = data.color;
+    document.getElementById('confBar').style.width      = data.confidence + '%';
+    document.getElementById('confBar').style.background = data.color;
+    document.getElementById('confPct').textContent      = data.confidence + '%';
+    document.getElementById('descBox').textContent      = data.description;
+    document.getElementById('descBox').style.borderColor = data.color;
+
+    // Top 3
+    const top3Html = data.top3.map(t => `
+      <div class="top3-row">
+        <span class="top3-name">${t.fallacy}</span>
+        <div class="top3-bar-wrap"><div class="top3-bar" style="width:${t.confidence}%;background:${data.color}"></div></div>
+        <span class="top3-pct">${t.confidence}%</span>
+      </div>`).join('');
+    document.getElementById('top3Container').innerHTML = top3Html;
+
+    document.getElementById('resultCard').classList.add('visible');
+
+  } catch(e) {
+    alert('Error connecting to model. Make sure app.py is running.');
+  } finally {
+    btn.disabled = false;
+    btnText.textContent = 'Analyze Argument';
+    spinner.style.display = 'none';
+  }
+}
+
+document.getElementById('inputText').addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'Enter') analyze();
+});
+</script>
+</body>
+</html>

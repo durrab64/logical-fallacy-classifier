@@ -1,0 +1,9 @@
+ACCURACY NUMBERS (fill after training):
+- Baseline Fallacy Type Accuracy: 45.9%
+- Baseline Fallacy Type F1:       39.4%
+- Baseline Taxonomy Accuracy:     62.9%
+- Baseline Taxonomy F1:           59.0%
+- BERT Fallacy Type Accuracy:     ____%
+- BERT Fallacy Type F1:           ____%
+- BERT Taxonomy Accuracy:         ____%
+- BERT Taxonomy F1:               ____%
