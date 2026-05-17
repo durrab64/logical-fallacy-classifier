@@ -42,4 +42,5 @@ Logic dataset by Jin et al., EMNLP 2022 — 2,449 labeled examples, 13 fallacy t
 4. Open: `http://localhost:5000`
 
 ## Model Download
-[Download bert_type_saved from Google Drive](YOUR_GOOGLE_DRIVE_LINK_HERE)
+[Download bert_type_saved from Google Drive]
+https://drive.google.com/drive/folders/1F7Trd7b7lvcvtLb45hctHbwLZl8lf7Ds?usp=sharing
