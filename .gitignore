@@ -1,7 +1,3 @@
 bert_type_saved/
-fallacy_clean.csv
-edu_train.csv
-edu_test.csv
-edu_dev.csv
 __pycache__/
 *.pyc
